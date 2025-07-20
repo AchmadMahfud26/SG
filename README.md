@@ -1,9 +1,11 @@
 # Smart Garden - Sistem Penyiraman Tanaman Otomatis Berbasis IoT
 
 ## Deskripsi
+
 Aplikasi dashboard berbasis web menggunakan PHP dan Bootstrap 5 untuk monitoring sensor dan kontrol pompa air pada sistem penyiraman tanaman otomatis/manual berbasis IoT.
 
 ## Fitur
+
 - Monitoring sensor kelembaban tanah, suhu tanah (DS18B20), suhu & kelembaban udara (DHT11)
 - Kontrol pompa air dengan mode otomatis/manual
 - Dashboard modern dan responsif dengan Bootstrap 5
@@ -11,6 +13,7 @@ Aplikasi dashboard berbasis web menggunakan PHP dan Bootstrap 5 untuk monitoring
 - Endpoint API untuk menerima data sensor dan mengontrol pompa
 
 ## Struktur Folder
+
 ```
 /smartgarden/
 ├── index.php
@@ -29,6 +32,7 @@ Aplikasi dashboard berbasis web menggunakan PHP dan Bootstrap 5 untuk monitoring
 ```
 
 ## Database
+
 Buat database MySQL bernama `smartgarden` dan jalankan query berikut untuk membuat tabel:
 
 ```sql
@@ -50,6 +54,7 @@ CREATE TABLE kontrol_pompa (
 ```
 
 ## Cara Penggunaan
+
 1. Sesuaikan konfigurasi database di `config/db.php`
 2. Upload seluruh folder ke server web dengan PHP dan MySQL
 3. Akses `index.php` untuk melihat dashboard dan kontrol pompa
@@ -57,9 +62,11 @@ CREATE TABLE kontrol_pompa (
 5. Gunakan tombol di dashboard untuk mengubah mode dan status pompa
 
 ## Catatan
+
 - Sesuaikan ambang batas kelembaban tanah di `index.php` sesuai kebutuhan
 - Pastikan server web dapat menulis ke database MySQL
 - Untuk grafik histori, akses `monitoring.php`
 
 ## Lisensi
+
 MIT License
