@@ -7,32 +7,6 @@ if (!isset($_SESSION['user'])) {
 }
 require_once 'config/db.php';
 
-// Ambil data sensor terbaru
-$stmt = $pdo->query("SELECT * FROM sensor_data ORDER BY waktu DESC LIMIT 1");
-$sensor = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Ambil status pompa dan mode terbaru
-$stmt2 = $pdo->query("SELECT * FROM kontrol_pompa ORDER BY waktu DESC LIMIT 1");
-$kontrol = $stmt2->fetch(PDO::FETCH_ASSOC);
-
-$pump_status = $kontrol['status'] ?? 'OFF';
-$mode = $kontrol['mode'] ?? 'otomatis';
-
-// Ambang batas kelembaban tanah untuk mode otomatis
-$soil_moisture_threshold = 40; // contoh nilai, bisa disesuaikan
-
-// Jika mode otomatis dan kelembaban tanah di bawah ambang, pompa ON
-if ($mode === 'otomatis' && $sensor && $sensor['kelembaban_tanah'] < $soil_moisture_threshold) {
-    $pump_status = 'ON';
-}
-
-// Ambil data histori kelembaban tanah dan status pompa (misal 30 data terakhir)
-$stmtHist = $pdo->query("SELECT waktu, kelembaban_tanah FROM sensor_data ORDER BY waktu DESC LIMIT 30");
-$sensor_data = array_reverse($stmtHist->fetchAll(PDO::FETCH_ASSOC));
-
-$stmtPump = $pdo->query("SELECT waktu, status FROM kontrol_pompa ORDER BY waktu DESC LIMIT 30");
-$pump_data = array_reverse($stmtPump->fetchAll(PDO::FETCH_ASSOC));
-
 include 'includes/header.php';
 ?>
 
@@ -45,7 +19,7 @@ include 'includes/header.php';
             <div class="card text-white bg-success h-100">
                 <div class="card-header">Kelembaban Tanah</div>
                 <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0"><?php echo $sensor ? $sensor['kelembaban_tanah'] . ' %' : '-'; ?></h3>
+                    <h3 class="card-title mb-0" id="soilMoistureValue">-</h3>
                 </div>
             </div>
         </div>
@@ -55,7 +29,7 @@ include 'includes/header.php';
             <div class="card text-white bg-info h-100">
                 <div class="card-header">Suhu Tanah (DS18B20)</div>
                 <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0"><?php echo $sensor ? $sensor['suhu_ds18b20'] . ' °C' : '-'; ?></h3>
+                    <h3 class="card-title mb-0" id="soilTempValue">-</h3>
                 </div>
             </div>
         </div>
@@ -63,9 +37,9 @@ include 'includes/header.php';
         <!-- Card Suhu DHT11 -->
         <div class="col-sm-6 col-md-3">
             <div class="card text-white bg-primary h-100">
-                <div class="card-header">Status Koneksi</div>
+                <div class="card-header">Kelembaban Udara (DHT11</div>
                 <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0"><?php echo $sensor ? $sensor['suhu_dht11'] . ' °C' : '-'; ?></h3>
+                    <h3 class="card-title mb-0" id="airTempValue">-</h3>
                 </div>
             </div>
         </div>
@@ -73,9 +47,9 @@ include 'includes/header.php';
         <!-- Card Kelembaban Udara DHT11 -->
         <div class="col-sm-6 col-md-3">
             <div class="card text-white bg-warning h-100">
-                <div class="card-header">Kelembaban Udara (DHT11)</div>
+                <div class="card-header">Status Koneksi</div>
                 <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0"><?php echo $sensor ? $sensor['kelembaban_dht11'] . ' %' : '-'; ?></h3>
+                    <h3 class="card-title mb-0" id="airHumidityValue">-</h3>
                 </div>
             </div>
         </div>
@@ -84,30 +58,28 @@ include 'includes/header.php';
     <!-- Status Mode dan Kontrol Pompa -->
     <div class="card mt-5">
         <div class="card-header">
-            Status Mode Penyiraman: <strong><?php echo ucfirst($mode); ?></strong>
+            Status Mode Penyiraman: <strong id="modeValue">-</strong>
         </div>
         <div class="card-body">
-            <p>Status Pompa: <strong><?php echo $pump_status; ?></strong></p>
+            <p>Status Pompa: <strong id="pumpStatusValue">-</strong></p>
 
-            <?php if ($mode === 'manual'): ?>
-                <form method="post" action="update_status.php" class="d-inline">
-                    <input type="hidden" name="status" value="<?php echo $pump_status === 'ON' ? 'OFF' : 'ON'; ?>">
-                    <button type="submit" class="btn btn-<?php echo $pump_status === 'ON' ? 'danger' : 'success'; ?> d-flex align-items-center">
-                        <img src="assets/img/<?php echo $pump_status === 'ON' ? '010-switch-off.png' : '009-switch-on.png'; ?>" alt="Pompa Icon" width="20" height="20" class="me-2" />
-                        Pompa <?php echo $pump_status === 'ON' ? 'Mati' : 'Hidup'; ?>
-                    </button>
-                </form>
-            <?php else: ?>
-                <p>Pompa dikontrol secara otomatis berdasarkan kelembaban tanah.</p>
-            <?php endif; ?>
+            <form method="post" action="update_status.php" class="d-inline" id="pumpControlForm" style="display:none;">
+                <input type="hidden" name="status" id="pumpStatusInput" value="">
+                <button type="submit" class="btn d-flex align-items-center" id="pumpControlButton">
+                    <img src="" alt="Pompa Icon" width="20" height="20" class="me-2" id="pumpIcon" />
+                    <span id="pumpButtonText"></span>
+                </button>
+            </form>
+
+            <p id="autoControlText" style="display:none;">Pompa dikontrol secara otomatis berdasarkan kelembaban tanah.</p>
 
             <hr>
 
-            <form method="post" action="set_mode.php" class="d-inline">
-                <input type="hidden" name="mode" value="<?php echo $mode === 'otomatis' ? 'manual' : 'otomatis'; ?>">
-                <button type="submit" class="btn btn-primary d-flex align-items-center">
+            <form method="post" action="set_mode.php" class="d-inline" id="modeControlForm" style="display:none;">
+                <input type="hidden" name="mode" id="modeInput" value="">
+                <button type="submit" class="btn btn-primary d-flex align-items-center" id="modeControlButton">
                     <img src="assets/img/008-mode.png" alt="Mode Icon" width="20" height="20" class="me-2" />
-                    Ganti ke Mode <?php echo $mode === 'otomatis' ? 'Manual' : 'Otomatis'; ?>
+                    <span id="modeButtonText"></span>
                 </button>
             </form>
         </div>
@@ -126,10 +98,78 @@ include 'includes/header.php';
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="assets/js/chart-history.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    const sensorData = <?php echo json_encode($sensor_data); ?>;
-    const pumpData = <?php echo json_encode($pump_data); ?>;
-    initSoilMoistureChart(sensorData, pumpData);
+    let soilMoistureChart = null;
+
+    function updateDashboard(data) {
+        if (!data) return;
+
+        // Update sensor values
+        document.getElementById('soilMoistureValue').textContent = data.sensor ? data.sensor.kelembaban_tanah + ' %' : '-';
+        document.getElementById('soilTempValue').textContent = data.sensor ? data.sensor.suhu_ds18b20 + ' °C' : '-';
+        document.getElementById('airTempValue').textContent = data.sensor ? data.sensor.suhu_dht11 + ' °C' : '-';
+        document.getElementById('airHumidityValue').textContent = data.sensor ? data.sensor.kelembaban_dht11 + ' %' : '-';
+
+        // Update mode and pump status
+        document.getElementById('modeValue').textContent = data.mode ? data.mode.charAt(0).toUpperCase() + data.mode.slice(1) : '-';
+        document.getElementById('pumpStatusValue').textContent = data.pump_status || '-';
+
+        // Update pump control UI
+        const pumpControlForm = document.getElementById('pumpControlForm');
+        const pumpStatusInput = document.getElementById('pumpStatusInput');
+        const pumpControlButton = document.getElementById('pumpControlButton');
+        const pumpIcon = document.getElementById('pumpIcon');
+        const pumpButtonText = document.getElementById('pumpButtonText');
+        const autoControlText = document.getElementById('autoControlText');
+        const modeControlForm = document.getElementById('modeControlForm');
+        const modeInput = document.getElementById('modeInput');
+        const modeControlButton = document.getElementById('modeControlButton');
+        const modeButtonText = document.getElementById('modeButtonText');
+
+        if (data.mode === 'manual') {
+            pumpControlForm.style.display = 'inline';
+            autoControlText.style.display = 'none';
+            pumpStatusInput.value = data.pump_status === 'ON' ? 'OFF' : 'ON';
+            pumpControlButton.className = 'btn d-flex align-items-center btn-' + (data.pump_status === 'ON' ? 'danger' : 'success');
+            pumpIcon.src = 'assets/img/' + (data.pump_status === 'ON' ? '010-switch-off.png' : '009-switch-on.png');
+            pumpButtonText.textContent = 'Pompa ' + (data.pump_status === 'ON' ? 'Mati' : 'Hidup');
+        } else {
+            pumpControlForm.style.display = 'none';
+            autoControlText.style.display = 'block';
+        }
+
+        if (data.mode) {
+            modeControlForm.style.display = 'inline';
+            modeInput.value = data.mode === 'otomatis' ? 'manual' : 'otomatis';
+            modeButtonText.textContent = 'Ganti ke Mode ' + (data.mode === 'otomatis' ? 'Manual' : 'Otomatis');
+        } else {
+            modeControlForm.style.display = 'none';
+        }
+
+        // Update chart
+        if (!soilMoistureChart) {
+            soilMoistureChart = initSoilMoistureChart(data.sensor_data, data.pump_data);
+        } else {
+            updateChartData(soilMoistureChart, data.sensor_data);
+        }
+    }
+
+    function fetchDashboardData() {
+        axios.get('get_dashboard_data.php')
+            .then(response => {
+                updateDashboard(response.data);
+            })
+            .catch(error => {
+                console.error('Gagal mengambil data dashboard:', error);
+            });
+    }
+
+    // Fetch data pertama kali saat halaman dimuat
+    fetchDashboardData();
+
+    // Polling data tiap 5 detik
+    setInterval(fetchDashboardData, 5000);
 </script>
 
 <?php include 'includes/footer.php'; ?>

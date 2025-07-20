@@ -119,4 +119,12 @@ function initSoilMoistureChart(sensorData, pumpData) {
 
   // Optional: Add pump ON markers on chart (advanced)
   // This requires plugin or custom drawing, omitted for simplicity
+  return soilMoistureChart;
+}
+
+// Fungsi untuk update data grafik secara dinamis
+function updateChartData(chart, newData) {
+  chart.data.labels = newData.map(d => new Date(d.waktu).toLocaleString());
+  chart.data.datasets[0].data = newData.map(d => d.kelembaban_tanah);
+  chart.update();
 }
