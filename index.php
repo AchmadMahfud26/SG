@@ -44,14 +44,14 @@ include 'includes/header.php';
             </div>
         </div>
 
-        <!-- Card Kelembaban Udara DHT11 -->
+        <!-- Card Status Koneksi -->
         <div class="col-sm-6 col-md-3">
-            <div class="card text-white bg-warning h-100">
-                <div class="card-header">Status Koneksi</div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0" id="airHumidityValue">-</h3>
-                </div>
-            </div>
+        <div class="card text-white bg-warning h-100">
+        <div class="card-header">Status Koneksi</div>
+        <div class="card-body d-flex align-items-center justify-content-center">
+        <h3 class="card-title mb-0" id="connectionStatusValue">-</h3>
+        </div>
+        </div>
         </div>
     </div>
 
@@ -86,12 +86,13 @@ include 'includes/header.php';
     </div>
 
     <!-- Chart Histori Kelembaban Tanah -->
-    <div class="card mt-5">
-        <div class="card-header">
-            Grafik Histori Kelembaban Tanah
+    <div class="card mt-5" style="min-height: 400px;">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <span id="chartDate" class="fw-bold text-primary"></span>
+            <span>Grafik Histori Kelembaban Tanah</span>
         </div>
-        <div class="card-body">
-            <canvas id="soilMoistureChart" height="100"></canvas>
+        <div class="card-body" style="height: 500px;">
+            <canvas id="soilMoistureChart" height="300"></canvas>
         </div>
     </div>
 </div>
@@ -105,11 +106,20 @@ include 'includes/header.php';
     function updateDashboard(data) {
         if (!data) return;
 
+        // Update tanggal di header grafik
+        if (data.sensor && data.sensor.waktu) {
+            const date = new Date(data.sensor.waktu);
+            const tanggal = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            document.getElementById('chartDate').textContent = tanggal;
+        } else {
+            document.getElementById('chartDate').textContent = '';
+        }
+
         // Update sensor values
         document.getElementById('soilMoistureValue').textContent = data.sensor ? data.sensor.kelembaban_tanah + ' %' : '-';
         document.getElementById('soilTempValue').textContent = data.sensor ? data.sensor.suhu_ds18b20 + ' °C' : '-';
         document.getElementById('airTempValue').textContent = data.sensor ? data.sensor.suhu_dht11 + ' °C' : '-';
-        document.getElementById('airHumidityValue').textContent = data.sensor ? data.sensor.kelembaban_dht11 + ' %' : '-';
+        // document.getElementById('airHumidityValue').textContent = data.sensor ? data.sensor.kelembaban_dht11 + ' %' : '-';
 
         // Update mode and pump status
         document.getElementById('modeValue').textContent = data.mode ? data.mode.charAt(0).toUpperCase() + data.mode.slice(1) : '-';
@@ -169,7 +179,48 @@ include 'includes/header.php';
     fetchDashboardData();
 
     // Polling data tiap 5 detik
-    setInterval(fetchDashboardData, 5000);
+    setInterval(fetchDashboardData, 500);
+
+    // Fungsi untuk update status koneksi
+    function updateConnectionStatus() {
+        axios.get('get_status.php')
+            .then(response => {
+                const koneksi = response.data.koneksi || '-';
+                const el = document.getElementById('connectionStatusValue');
+                el.textContent = koneksi;
+                el.style.color = (koneksi === 'Terhubung') ? '#198754' : '#dc3545'; // hijau/merah
+            })
+            .catch(() => {
+                const el = document.getElementById('connectionStatusValue');
+                el.textContent = '-';
+                el.style.color = '#212529';
+            });
+    }
+
+    // Update status koneksi pertama kali
+    updateConnectionStatus();
+    // Polling status koneksi tiap 5 detik
+    setInterval(updateConnectionStatus, 500);
+
+// AJAX untuk kontrol pompa
+    document.getElementById('pumpControlForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        axios.post('update_status.php', formData)
+            .then(() => {
+                fetchDashboardData();
+            });
+    });
+
+    // AJAX untuk kontrol mode
+    document.getElementById('modeControlForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        axios.post('set_mode.php', formData)
+            .then(() => {
+                fetchDashboardData();
+            });
+    });
 </script>
 
 <?php include 'includes/footer.php'; ?>

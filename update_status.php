@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt = $pdo->prepare("INSERT INTO kontrol_pompa (status, mode, waktu) VALUES (?, ?, NOW())");
         $stmt->execute([$status, $current_mode]);
+        // Kirim perintah ke alat secara real-time
+        @file_get_contents("http://192.168.188.122/pompa?status=$status");
         header("Location: index.php");
         exit;
     } catch (PDOException $e) {

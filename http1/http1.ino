@@ -4,6 +4,9 @@
 #include <OneWire.h>
 #include <DHT.h>
 #include <LiquidCrystal_I2C.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+#include <ArduinoJson.h>
 
 // ==== DEFINISI PIN & KONSTANTA ====
 #define ONE_WIRE_BUS D5
@@ -30,6 +33,9 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 // ==== KREDENSIAL WIFI ====
 const char* ssid = "Nebeng";
 const char* password = "26262626";
+
+// ==== ALAMAT SERVER ====
+const char* server_host = "192.168.1.3"; // Ganti sesuai IP server Anda
 
 ESP8266WebServer server(80);
 
@@ -64,8 +70,7 @@ float fuzzySugenoPump(int soil) {
   return atas / bawah;
 }
 
-// ==== HANDLER HTTP ====
-// Tambahkan header CORS untuk mengizinkan permintaan dari web
+// ==== HANDLER HTTP (untuk akses lokal/manual) ====
 void addCORSHeaders() {
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -103,7 +108,6 @@ void handlePumpOn() {
   if (sistem == 0) {
     digitalWrite(pump, LOW); // Relay aktif LOW
     pompaStatus = 1;
-    // Update LCD immediately
     lcd.setCursor(13, 1);
     lcd.print("ON ");
     server.send(200, "text/plain", "Pompa ON");
@@ -117,7 +121,6 @@ void handlePumpOff() {
   if (sistem == 0) {
     digitalWrite(pump, HIGH); // Relay aktif LOW
     pompaStatus = 0;
-    // Update LCD immediately
     lcd.setCursor(13, 1);
     lcd.print("OFF");
     server.send(200, "text/plain", "Pompa OFF");
@@ -176,7 +179,6 @@ void setup() {
   server.on("/pump/off", handlePumpOff);
   server.on("/status", handleStatus);
 
-  // Handle OPTIONS request for CORS preflight
   server.onNotFound([]() {
     if (server.method() == HTTP_OPTIONS) {
       addCORSHeaders();
@@ -201,7 +203,6 @@ void setup() {
     humi = (int)h;
   }
 
-  // Update LCD with initial sensor values
   lcd.setCursor(12, 0);
   if (temp < 10) lcd.print(" ");
   lcd.print(temp);
@@ -217,7 +218,6 @@ void setup() {
   else if (humi < 100) lcd.print(" ");
   lcd.print(humi);
 
-  // Set initial pump status on LCD
   lcd.setCursor(13, 1);
   if (pompaStatus == 1) {
     lcd.print("ON ");
@@ -227,10 +227,9 @@ void setup() {
 }
 
 unsigned long previousSensorMillis = 0;
-const long sensorInterval = 1000; // 1 second interval for sensor reading
-
-#include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
+const long sensorInterval = 1000; // 1 detik untuk baca sensor & kirim data
+unsigned long previousStatusMillis = 0;
+const long statusInterval = 2000; // 2 detik untuk cek status dari web
 
 void loop() {
   server.handleClient();
@@ -254,19 +253,50 @@ void loop() {
   }
 
   unsigned long currentMillis = millis();
+
+  // Ambil status mode & pompa dari web setiap 2 detik
+  if (currentMillis - previousStatusMillis >= statusInterval) {
+    previousStatusMillis = currentMillis;
+    if (WiFi.status() == WL_CONNECTED) {
+      HTTPClient http;
+      String url = String("http://") + server_host + "/SG/get_status.php";
+      WiFiClient client;
+      http.begin(client, url);
+      int httpCode = http.GET();
+      if (httpCode == 200) {
+        String payload = http.getString();
+        DynamicJsonDocument doc(256);
+        DeserializationError error = deserializeJson(doc, payload);
+        if (!error) {
+          String mode = doc["mode"];
+          String status = doc["status"];
+          sistem = (mode == "otomatis") ? 1 : 0;
+          if (sistem == 0) {
+            if (status == "ON") {
+              digitalWrite(pump, LOW);
+              pompaStatus = 1;
+            } else {
+              digitalWrite(pump, HIGH);
+              pompaStatus = 0;
+            }
+          }
+        }
+      }
+      http.end();
+    }
+  }
+
+  // Baca sensor & kirim data ke server setiap 1 detik
   if (currentMillis - previousSensorMillis >= sensorInterval) {
     previousSensorMillis = currentMillis;
 
-    // Baca suhu
     sensors.requestTemperatures();
     temp = sensors.getTempCByIndex(0);
 
-    // Baca kelembaban tanah
     soilMoistureValue = analogRead(A0);
     soilmoist = map(soilMoistureValue, AirValue, WaterValue, 0, 100);
     soilmoist = constrain(soilmoist, 0, 100);
 
-    // Baca kelembaban udara
     float h = dht.readHumidity();
     if (!isnan(h)) {
       humi = (int)h;
@@ -307,21 +337,15 @@ void loop() {
     // Kirim data sensor ke server PHP
     if (WiFi.status() == WL_CONNECTED) {
       HTTPClient http;
-      String serverPath = "http://192.168.1.3/SG/input_data.php";
+      String serverPath = String("http://") + server_host + "/SG/input_data.php";
       serverPath += "?suhu_ds18b20=" + String(temp);
       serverPath += "&kelembaban_tanah=" + String(soilmoist);
-      serverPath += "&suhu_dht11=" + String(temp); // Assuming suhu_dht11 same as temp here, adjust if needed
+      serverPath += "&suhu_dht11=" + String(temp); // Adjust if needed
       serverPath += "&kelembaban_dht11=" + String(humi);
 
       WiFiClient client;
       http.begin(client, serverPath);
       int httpResponseCode = http.GET();
-      if (httpResponseCode > 0) {
-        String payload = http.getString();
-        Serial.println("Response from server: " + payload);
-      } else {
-        Serial.println("Error sending data to server: " + String(httpResponseCode));
-      }
       http.end();
     }
 

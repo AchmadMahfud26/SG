@@ -1,9 +1,15 @@
 function initSoilMoistureChart(sensorData, pumpData) {
   const ctx = document.getElementById("soilMoistureChart").getContext("2d");
 
-  // Prepare labels and data
-  const labels = sensorData.map((d) => new Date(d.waktu).toLocaleString());
-  const soilMoistureValues = sensorData.map((d) => d.kelembaban_tanah);
+  // Ambil 1000 data terakhir apa adanya
+  let filteredSensorData = sensorData.length > 1000 ? sensorData.slice(-1000) : sensorData;
+
+  // Prepare labels and data (jam saja)
+  const labels = filteredSensorData.map((d) => {
+    const date = new Date(d.waktu);
+    return date.toLocaleTimeString('id-ID', { hour12: false });
+  });
+  const soilMoistureValues = filteredSensorData.map((d) => d.kelembaban_tanah);
 
   // Prepare pump status data as background color or markers
   // We'll mark pump ON times on the chart as vertical lines or points
@@ -51,6 +57,16 @@ function initSoilMoistureChart(sensorData, pumpData) {
               size: 14,
               weight: "bold",
             },
+            autoSkip: false,
+            callback: function(value) {
+              // Debug: log value yang diproses
+              // console.log('Y tick:', value);
+              // Tampilkan hanya label 0, 10, 20, ..., 100
+              if (value >= 0 && value <= 100 && value % 10 === 0) {
+                return value;
+              }
+              return null;
+            }
           },
           grid: {
             color: "#ddd",
@@ -124,7 +140,12 @@ function initSoilMoistureChart(sensorData, pumpData) {
 
 // Fungsi untuk update data grafik secara dinamis
 function updateChartData(chart, newData) {
-  chart.data.labels = newData.map(d => new Date(d.waktu).toLocaleString());
-  chart.data.datasets[0].data = newData.map(d => d.kelembaban_tanah);
+  // Ambil 1000 data terakhir apa adanya
+  let filteredSensorData = newData.length > 1000 ? newData.slice(-1000) : newData;
+  chart.data.labels = filteredSensorData.map(d => {
+    const date = new Date(d.waktu);
+    return date.toLocaleTimeString('id-ID', { hour12: false });
+  });
+  chart.data.datasets[0].data = filteredSensorData.map(d => d.kelembaban_tanah);
   chart.update();
 }
