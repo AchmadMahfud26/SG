@@ -31,6 +31,7 @@ function initSoilMoistureChart(sensorData, pumpData) {
     data: data,
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       interaction: {
         mode: "index",
         intersect: false,
@@ -43,9 +44,55 @@ function initSoilMoistureChart(sensorData, pumpData) {
           position: "left",
           min: 0,
           max: 100,
+          ticks: {
+            stepSize: 10,
+            color: "#666",
+            font: {
+              size: 14,
+              weight: "bold",
+            },
+          },
+          grid: {
+            color: "#ddd",
+            borderColor: "#bbb",
+            borderWidth: 2,
+            drawBorder: true,
+            drawTicks: true,
+            tickLength: 10,
+          },
           title: {
             display: true,
             text: "Kelembaban (%)",
+            color: "#222",
+            font: {
+              size: 16,
+              weight: "bold",
+            },
+          },
+        },
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: "Waktu",
+            color: "#222",
+            font: {
+              size: 16,
+              weight: "bold",
+            },
+          },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45,
+            autoSkip: true,
+            maxTicksLimit: 10,
+            color: "#666",
+            font: {
+              size: 12,
+            },
+          },
+          grid: {
+            display: false,
           },
         },
       },

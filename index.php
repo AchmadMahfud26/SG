@@ -63,7 +63,7 @@ include 'includes/header.php';
         <!-- Card Suhu DHT11 -->
         <div class="col-sm-6 col-md-3">
             <div class="card text-white bg-primary h-100">
-                <div class="card-header">Suhu Udara (DHT11)</div>
+                <div class="card-header">Status Koneksi</div>
                 <div class="card-body d-flex align-items-center justify-content-center">
                     <h3 class="card-title mb-0"><?php echo $sensor ? $sensor['suhu_dht11'] . ' °C' : '-'; ?></h3>
                 </div>

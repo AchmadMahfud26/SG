@@ -32,7 +32,7 @@
           </ul>
         </div>
       </li>
-      <li class="nav-item">
+      <li class="nav-item mt-auto">
         <a class="nav-link text-danger" href="logout.php">
           <img src="assets/img/004-logout.png" alt="Settings Icon" width="20" height="20" class="me-2" />
           Logout
