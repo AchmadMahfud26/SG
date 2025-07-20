@@ -18,7 +18,7 @@
         <div class="collapse" id="settingsSubmenu">
           <ul class="nav flex-column ms-3">
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="#">
+              <a class="nav-link d-flex align-items-center" href="profile.php">
                 <img src="assets/img/003-profile.png" alt="Profil User Icon" width="16" height="16" class="me-2" />
                 Profil User
               </a>

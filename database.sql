@@ -1,21 +1,28 @@
--- database.sql
--- Script untuk membuat database dan tabel yang dibutuhkan Smart Garden
+-- Struktur tabel users untuk login admin
+CREATE TABLE users (
+  id INT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
 
-CREATE DATABASE IF NOT EXISTS `smartgarden` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `smartgarden`;
+-- Tabel sensor_data (jika belum ada)
+CREATE TABLE sensor_data (
+  id INT NOT NULL AUTO_INCREMENT,
+  waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  suhu_ds18b20 FLOAT,
+  suhu_dht11 FLOAT,
+  kelembaban_dht11 FLOAT,
+  kelembaban_tanah FLOAT,
+  PRIMARY KEY (id)
+);
 
-CREATE TABLE IF NOT EXISTS `sensor_data` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `waktu` DATETIME NOT NULL,
-    `suhu_ds18b20` FLOAT NOT NULL,
-    `suhu_dht11` FLOAT NOT NULL,
-    `kelembaban_dht11` FLOAT NOT NULL,
-    `kelembaban_tanah` FLOAT NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS `kontrol_pompa` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `status` ENUM('ON', 'OFF') NOT NULL,
-    `mode` ENUM('otomatis', 'manual') NOT NULL,
-    `waktu` DATETIME NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Tabel kontrol_pompa (jika belum ada)
+CREATE TABLE kontrol_pompa (
+  id INT NOT NULL AUTO_INCREMENT,
+  status ENUM('ON', 'OFF') NOT NULL,
+  mode ENUM('otomatis', 'manual') NOT NULL,
+  waktu TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);

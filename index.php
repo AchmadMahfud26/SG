@@ -1,5 +1,10 @@
 <?php
 // index.php
+session_start();
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
 require_once 'config/db.php';
 
 // Ambil data sensor terbaru
@@ -87,7 +92,8 @@ include 'includes/header.php';
             <?php if ($mode === 'manual'): ?>
                 <form method="post" action="update_status.php" class="d-inline">
                     <input type="hidden" name="status" value="<?php echo $pump_status === 'ON' ? 'OFF' : 'ON'; ?>">
-                    <button type="submit" class="btn btn-<?php echo $pump_status === 'ON' ? 'danger' : 'success'; ?>">
+                    <button type="submit" class="btn btn-<?php echo $pump_status === 'ON' ? 'danger' : 'success'; ?> d-flex align-items-center">
+                        <img src="assets/img/<?php echo $pump_status === 'ON' ? '010-switch-off.png' : '009-switch-on.png'; ?>" alt="Pompa Icon" width="20" height="20" class="me-2" />
                         Pompa <?php echo $pump_status === 'ON' ? 'Mati' : 'Hidup'; ?>
                     </button>
                 </form>
@@ -99,7 +105,8 @@ include 'includes/header.php';
 
             <form method="post" action="set_mode.php" class="d-inline">
                 <input type="hidden" name="mode" value="<?php echo $mode === 'otomatis' ? 'manual' : 'otomatis'; ?>">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary d-flex align-items-center">
+                    <img src="assets/img/008-mode.png" alt="Mode Icon" width="20" height="20" class="me-2" />
                     Ganti ke Mode <?php echo $mode === 'otomatis' ? 'Manual' : 'Otomatis'; ?>
                 </button>
             </form>
