@@ -36,5 +36,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
       </li>
     </ul>
+    <div class="sidebar-footer text-center mt-4 mb-2">
+      <small>SMART GARDEN - SIRAMIN</small>
+    </div>
   </div>
 </nav>
