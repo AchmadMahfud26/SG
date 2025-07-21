@@ -109,6 +109,26 @@ include 'includes/header.php';
     function updateDashboard(data) {
         if (!data) return;
 
+        // Update status koneksi di card
+        const koneksi = data.koneksi || '-';
+        const elKoneksi = document.getElementById('connectionStatusValue');
+        elKoneksi.textContent = koneksi;
+        elKoneksi.style.color = (koneksi === 'Terhubung') ? '#198754' : '#dc3545';
+
+        // Jika koneksi terputus, kosongkan semua data
+        if (koneksi !== 'Terhubung') {
+            document.getElementById('soilMoistureValue').textContent = '-';
+            document.getElementById('soilTempValue').textContent = '-';
+            document.getElementById('airTempValue').textContent = '-';
+            document.getElementById('modeValue').textContent = '-';
+            document.getElementById('pumpStatusValue').textContent = '-';
+            document.getElementById('chartDate').textContent = '';
+            if (typeof soilMoistureChart !== 'undefined' && soilMoistureChart) {
+                updateChartData(soilMoistureChart, []);
+            }
+            return;
+        }
+
         // Update tanggal di header grafik
         if (data.sensor && data.sensor.waktu) {
             const date = new Date(data.sensor.waktu);
@@ -181,29 +201,8 @@ include 'includes/header.php';
     // Fetch data pertama kali saat halaman dimuat
     fetchDashboardData();
 
-    // Polling data tiap 5 detik
-    setInterval(fetchDashboardData, 500);
-
-    // Fungsi untuk update status koneksi
-    function updateConnectionStatus() {
-        axios.get('get_status.php')
-            .then(response => {
-                const koneksi = response.data.koneksi || '-';
-                const el = document.getElementById('connectionStatusValue');
-                el.textContent = koneksi;
-                el.style.color = (koneksi === 'Terhubung') ? '#198754' : '#dc3545'; // hijau/merah
-            })
-            .catch(() => {
-                const el = document.getElementById('connectionStatusValue');
-                el.textContent = '-';
-                el.style.color = '#212529';
-            });
-    }
-
-    // Update status koneksi pertama kali
-    updateConnectionStatus();
-    // Polling status koneksi tiap 5 detik
-    setInterval(updateConnectionStatus, 500);
+    // Polling data tiap 1 detik
+    setInterval(fetchDashboardData, 1000);
 
 // AJAX untuk kontrol pompa
     document.getElementById('pumpControlForm').addEventListener('submit', function(e) {
@@ -235,7 +234,7 @@ function createGaugeChart(ctx, value, color, outlineColor) {
                 data: [value, 100 - value],
                 backgroundColor: [color, '#e9ecef'],
                 borderColor: [outlineColor, '#ced4da'],
-                borderWidth: [4, 2],
+                borderWidth: [6, 4],
                 cutout: '80%',
                 circumference: 180,
                 rotation: 270,

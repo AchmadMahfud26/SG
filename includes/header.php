@@ -46,3 +46,4 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="main-content">
 
 <script src="assets/js/sidebar-toggle.js"></script>
+<script src="assets/js/status-koneksi.js"></script>

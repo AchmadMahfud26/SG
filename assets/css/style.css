@@ -4,6 +4,19 @@ body {
   font-family: Arial, sans-serif;
 }
 
+.navbar.fixed-top {
+  z-index: 1100;
+}
+
+.navbar-brand {
+  color: black !important;
+  font-weight: bold;
+}
+
+h1.h2.mb-4.text-success {
+  color: black !important;
+}
+
 .gauge-value {
   font-size: 2.2rem;
   font-weight: bold;
@@ -11,7 +24,7 @@ body {
   color: #fff;
   background: transparent;
   border-radius: 1.5rem;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 2px #000;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), 0 0 2px #000;
   border: none;
   padding: 0.2rem 0.8rem;
   display: inline-block;
@@ -23,8 +36,8 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1050;
-    height: 100vh;
+    z-index: 1050; /* Increased from 900 */
+    height: calc(100vh - 56px); /* Adjusted height */
     width: 250px;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   }
@@ -44,6 +57,7 @@ body {
   overflow-y: auto;
   border-right: 1px solid #dee2e6;
   transition: all 0.3s ease;
+  z-index: 900; /* Lebih rendah dari header/footer */
 }
 
 .sidebar.collapsed {
@@ -106,8 +120,8 @@ body {
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
-    z-index: 1030;
-    height: 100vh;
+    z-index: 1050; /* Increased from 900 */
+    height: calc(100vh - 56px); /* Adjusted height */
     top: 56px;
     left: -220px;
     width: 220px;
@@ -115,12 +129,36 @@ body {
     background-color: #f8f9fa;
   }
 
-  .sidebar.collapsed {
+  .sidebar.show {
     left: 0;
   }
 
   .main-content {
     margin-left: 0;
     padding: 1rem;
+  }
+}
+
+.site-footer {
+  text-align: center;
+  padding: 10px 0;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #ccc;
+  margin-left: 220px;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  position: relative;
+  z-index: 800; /* Lebih rendah dari sidebar */
+  width: calc(100% - 220px);
+}
+
+.site-footer.footer-expanded {
+  margin-left: 0;
+  width: 100%;
+}
+
+@media (max-width: 991.98px) {
+  .site-footer {
+    margin-left: 0;
   }
 }
