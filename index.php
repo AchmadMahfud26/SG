@@ -18,8 +18,9 @@ include 'includes/header.php';
         <div class="col-sm-6 col-md-3">
             <div class="card text-white bg-success h-100">
                 <div class="card-header">Kelembaban Tanah</div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0" id="soilMoistureValue">-</h3>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <canvas id="soilMoistureGauge" width="150" height="150"></canvas>
+                    <div id="soilMoistureValue" class="gauge-value mt-2">-</div>
                 </div>
             </div>
         </div>
@@ -28,8 +29,9 @@ include 'includes/header.php';
         <div class="col-sm-6 col-md-3">
             <div class="card text-white bg-info h-100">
                 <div class="card-header">Suhu Tanah (DS18B20)</div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0" id="soilTempValue">-</h3>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <canvas id="soilTempGauge" width="150" height="150"></canvas>
+                    <div id="soilTempValue" class="gauge-value mt-2">-</div>
                 </div>
             </div>
         </div>
@@ -38,8 +40,9 @@ include 'includes/header.php';
         <div class="col-sm-6 col-md-3">
             <div class="card text-white bg-primary h-100">
                 <div class="card-header">Kelembaban Udara (DHT11)</div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    <h3 class="card-title mb-0" id="airTempValue">-</h3>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <canvas id="airTempGauge" width="150" height="150"></canvas>
+                    <div id="airTempValue" class="gauge-value mt-2">-</div>
                 </div>
             </div>
         </div>
@@ -221,6 +224,61 @@ include 'includes/header.php';
                 fetchDashboardData();
             });
     });
+// Gauge Chart.js setup
+let soilMoistureGaugeChart, soilTempGaugeChart, airTempGaugeChart;
+
+function createGaugeChart(ctx, value, color, outlineColor) {
+    return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [value, 100 - value],
+                backgroundColor: [color, '#e9ecef'],
+                borderColor: [outlineColor, '#ced4da'],
+                borderWidth: [4, 2],
+                cutout: '80%',
+                circumference: 180,
+                rotation: 270,
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                tooltip: { enabled: false },
+                legend: { display: false },
+            }
+        }
+    });
+}
+
+function updateGaugeChart(chart, value) {
+    chart.data.datasets[0].data[0] = value;
+    chart.data.datasets[0].data[1] = 100 - value;
+    chart.update();
+}
+
+function initGauges() {
+    const soilMoistureCtx = document.getElementById('soilMoistureGauge').getContext('2d');
+    const soilTempCtx = document.getElementById('soilTempGauge').getContext('2d');
+    const airTempCtx = document.getElementById('airTempGauge').getContext('2d');
+    soilMoistureGaugeChart = createGaugeChart(soilMoistureCtx, 0, '#198754', '#145c32'); // hijau
+    soilTempGaugeChart = createGaugeChart(soilTempCtx, 0, '#0dcaf0', '#0a6a8a'); // biru muda
+    airTempGaugeChart = createGaugeChart(airTempCtx, 0, '#0d6efd', '#083b7a'); // biru tua
+}
+initGauges();
+
+// Update dashboard override
+const oldUpdateDashboard = updateDashboard;
+updateDashboard = function(data) {
+    oldUpdateDashboard(data);
+
+    // Update gauge values
+    if (data && data.sensor) {
+        updateGaugeChart(soilMoistureGaugeChart, data.sensor.kelembaban_tanah);
+        updateGaugeChart(soilTempGaugeChart, data.sensor.suhu_ds18b20);
+        updateGaugeChart(airTempGaugeChart, data.sensor.suhu_dht11);
+    }
+};
 </script>
 
 <?php include 'includes/footer.php'; ?>

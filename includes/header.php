@@ -22,7 +22,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
   <div class="container-fluid d-flex justify-content-between align-items-center">
     <div>
-      <button class="btn btn-outline-light me-2" id="sidebarToggle">☰</button>
+      <button class="btn btn-outline-light me-2" id="sidebarToggle" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle sidebar">☰</button>
       <a class="navbar-brand" href="index.php">Smart Garden</a>
     </div>
     <div class="d-flex align-items-center dropdown">

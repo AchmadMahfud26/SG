@@ -3,6 +3,7 @@
 ?>
 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse vh-100">
   <div class="position-sticky pt-3 sidebar-sticky">
+    <button type="button" class="btn btn-link text-end w-100 d-lg-none mb-2" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-label="Tutup Sidebar" style="font-size:1.5rem;">&times;</button>
     <ul class="nav flex-column">
       <li class="nav-item">
         <a class="nav-link active d-flex align-items-center" aria-current="page" href="index.php">
