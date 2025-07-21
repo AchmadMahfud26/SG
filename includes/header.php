@@ -32,26 +32,7 @@ if (session_status() === PHP_SESSION_NONE) {
             echo isset($_SESSION['user']) ? htmlspecialchars($_SESSION['user']) : 'Profil User';
           ?>
         </span>
-        <?php
-          $avatarPath = 'assets/img/default_avatar.png'; // default avatar
-          if (isset($_SESSION['user'])) {
-              $possibleExtensions = ['png', 'jpg', 'jpeg', 'gif'];
-              foreach ($possibleExtensions as $ext) {
-                  $file = 'assets/img/' . $_SESSION['user'] . '_avatar.' . $ext;
-                  if (file_exists($file)) {
-                      $avatarPath = $file;
-                      break;
-                  }
-              }
-          }
-        ?>
-        <?php
-          $avatarUrl = $avatarPath;
-          if (file_exists($avatarPath)) {
-              $avatarUrl .= '?v=' . filemtime($avatarPath);
-          }
-        ?>
-        <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="Avatar" class="rounded-circle border border-light" width="40" height="40" />
+        <img src="avatar.php" alt="Avatar" class="rounded-circle border border-light" width="40" height="40" />
       </a>
       <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
         <li><a class="dropdown-item" href="profile.php">Pengaturan</a></li>

@@ -43,18 +43,7 @@ if (!$user) {
         <div class="card-body">
             <form action="profile_process.php" method="post" enctype="multipart/form-data">
                 <div class="mb-3">
-                    <?php
-                      $avatarPath = 'assets/img/default_avatar.png'; // default avatar
-                      $possibleExtensions = ['png', 'jpg', 'jpeg', 'gif'];
-                      foreach ($possibleExtensions as $ext) {
-                          $file = 'assets/img/' . $user['username'] . '_avatar.' . $ext;
-                          if (file_exists($file)) {
-                              $avatarPath = $file;
-                              break;
-                          }
-                      }
-                    ?>
-                    <img src="<?php echo htmlspecialchars($avatarPath); ?>" alt="Avatar" class="rounded-circle mb-3" width="100" height="100" />
+                    <img src="avatar.php" alt="Avatar" class="rounded-circle mb-3" width="100" height="100" />
                     <input type="file" name="avatar" accept="image/*" class="form-control" required />
                 </div>
                 <button type="submit" name="action" value="update_avatar" class="btn btn-primary">Unggah Avatar</button>

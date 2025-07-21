@@ -10,28 +10,22 @@
           Dashboard
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link d-flex align-items-center" href="#settingsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="settingsSubmenu">
-          <img src="assets/img/002-cogwheel.png" alt="Settings Icon" width="20" height="20" class="me-2" />
-          Pengaturan
-        </a>
-        <div class="collapse" id="settingsSubmenu">
-          <ul class="nav flex-column ms-3">
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="profile.php">
-                <img src="assets/img/003-profile.png" alt="Profil User Icon" width="16" height="16" class="me-2" />
-                Profil User
+              <a class="nav-link d-flex align-items-center" href="#settingsSubmenu" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="settingsSubmenu">
+                <img src="assets/img/002-cogwheel.png" alt="Settings Icon" width="20" height="20" class="me-2" />
+                Pengaturan
               </a>
+              <div class="collapse" id="settingsSubmenu">
+                <ul class="nav flex-column ms-3">
+                  <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center" href="profile.php">
+                      <img src="assets/img/003-profile.png" alt="Profil User Icon" width="16" height="16" class="me-2" />
+                      Profil User
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center" href="#">
-                <img src="assets/img/003-profile.png" alt="Profil User Icon" width="16" height="16" class="me-2" />
-                User
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
       <li class="nav-item mt-auto">
         <a class="nav-link text-danger" href="logout.php">
           <img src="assets/img/004-logout.png" alt="Settings Icon" width="20" height="20" class="me-2" />

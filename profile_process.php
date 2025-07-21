@@ -23,22 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $allowedfileExtensions = ['jpg', 'jpeg', 'png', 'gif'];
             if (in_array($fileExtension, $allowedfileExtensions)) {
-                $newFileName = $username . '_avatar.' . $fileExtension;
-                $uploadFileDir = 'assets/img/';
-                $dest_path = $uploadFileDir . $newFileName;
+                // Read the file content
+                $avatarData = file_get_contents($fileTmpPath);
 
-                // Hapus file avatar lama jika ada dengan ekstensi lain
-                foreach ($allowedfileExtensions as $ext) {
-                    $oldFile = $uploadFileDir . $username . '_avatar.' . $ext;
-                    if (file_exists($oldFile) && $oldFile !== $dest_path) {
-                        unlink($oldFile);
-                    }
-                }
+                // Update avatar in database
+                $stmt = $pdo->prepare("UPDATE users SET avatar = :avatar WHERE username = :username");
+                $stmt->bindParam(':avatar', $avatarData, PDO::PARAM_LOB);
+                $stmt->bindParam(':username', $username, PDO::PARAM_STR);
 
-                if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                if ($stmt->execute()) {
                     $_SESSION['success'] = 'Avatar berhasil diunggah.';
                 } else {
-                    $_SESSION['error'] = 'Terjadi kesalahan saat mengunggah avatar.';
+                    $_SESSION['error'] = 'Terjadi kesalahan saat menyimpan avatar ke database.';
                 }
             } else {
                 $_SESSION['error'] = 'Format file tidak didukung. Gunakan jpg, jpeg, png, atau gif.';
