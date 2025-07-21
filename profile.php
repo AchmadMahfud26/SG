@@ -27,7 +27,7 @@ if (!$user) {
 
 <?php include 'includes/header.php'; ?>
 
-<div class="container mt-5 pt-5" style="max-width: 600px;">
+<div class="mt-5 pt-5 main-content">
     <h2>Profil User</h2>
 
     <?php if ($error): ?>

@@ -34,10 +34,16 @@ if (session_status() === PHP_SESSION_NONE) {
         </span>
         <img src="avatar.php" alt="Avatar" class="rounded-circle border border-light" width="40" height="40" />
       </a>
-      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-        <li><a class="dropdown-item" href="profile.php">Pengaturan</a></li>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+        <li><a class="dropdown-item d-flex align-items-center" href="profile.php">
+          <img src="assets/img/002-cogwheel.png" alt="Settings Icon" width="20" height="20" class="me-2" />
+          Pengaturan
+        </a></li>
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="logout.php">Logout</a></li>
+        <li><a class="dropdown-item d-flex align-items-center" href="logout.php">
+          <img src="assets/img/004-logout.png" alt="Logout Icon" width="20" height="20" class="me-2" />
+          Logout
+        </a></li>
       </ul>
     </div>
   </div>

@@ -71,6 +71,13 @@ h1.h2.mb-4.text-success {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+.dropdown-menu .dropdown-item img {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
 .sidebar .nav-link:hover {
   background-color: #e7f1ff;
   color: #0a58ca;
@@ -82,19 +89,53 @@ h1.h2.mb-4.text-success {
   color: #0a58ca;
 }
 
+.sidebar .nav-link:hover {
+  background-color: #e7f1ff;
+  color: #0a58ca;
+}
+
+.sidebar .nav .nav-link.active {
+  font-weight: bold;
+  background-color: #d0e2ff;
+  color: #0a58ca;
+}
+
+.sidebar .nav .nav-link:hover {
+  background-color: #d0e2ff;
+  color: #0a58ca;
+}
+
 .sidebar .nav-link.text-danger {
   color: #dc3545;
 }
 
 .main-content {
   margin-left: 100px;
-  padding: 2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-top: 15px;
   margin-top: 15px;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, padding 0.3s ease;
 }
 
 .main-content.expanded {
   margin-left: 0;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 15px;
+  }
+
+  .main-content.expanded {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 
 .card {
