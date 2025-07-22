@@ -166,7 +166,7 @@ include 'includes/header.php';
             pumpStatusInput.value = data.pump_status === 'ON' ? 'OFF' : 'ON';
             pumpControlButton.className = 'btn d-flex align-items-center btn-' + (data.pump_status === 'ON' ? 'danger' : 'success');
             pumpIcon.src = 'assets/img/' + (data.pump_status === 'ON' ? '010-switch-off.png' : '009-switch-on.png');
-            pumpButtonText.textContent = 'Pompa ' + (data.pump_status === 'ON' ? 'Mati' : 'Hidup');
+            pumpButtonText.textContent = data.pump_status === 'ON' ? 'Matikan Pompa' : 'Hidupkan Pompa';
         } else {
             pumpControlForm.style.display = 'none';
             autoControlText.style.display = 'block';
