@@ -16,7 +16,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Custom CSS -->
     <link href="assets/css/style.css" rel="stylesheet" />
-    
+    <link rel="icon" type="image/png" href="assets/img/agriculture.png" />
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
