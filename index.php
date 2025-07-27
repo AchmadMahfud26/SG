@@ -41,10 +41,12 @@ include 'includes/header.php';
             <div class="card text-white bg-primary h-100">
                 <div class="card-header">Kelembaban Udara (DHT11)</div>
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                    <canvas id="airTempGauge" width="150" height="150"></canvas>
-                    <div id="airTempValue" class="gauge-value mt-2">-</div>
-                </div>
+                <canvas id="airTempGauge" width="150" height="150"></canvas>
+                <!-- Hapus tampilan suhu udara -->
+                <!-- <div id="airTempValue" class="gauge-value mt-2">-</div> -->
+                <div id="airHumidityValue" class="gauge-value mt-2">-</div>
             </div>
+        </div>
         </div>
 
         <!-- Card Status Koneksi -->
@@ -141,8 +143,8 @@ include 'includes/header.php';
         // Update sensor values
         document.getElementById('soilMoistureValue').textContent = data.sensor ? data.sensor.kelembaban_tanah + ' %' : '-';
         document.getElementById('soilTempValue').textContent = data.sensor ? data.sensor.suhu_ds18b20 + ' °C' : '-';
-        document.getElementById('airTempValue').textContent = data.sensor ? data.sensor.suhu_dht11 + ' °C' : '-';
-        // document.getElementById('airHumidityValue').textContent = data.sensor ? data.sensor.kelembaban_dht11 + ' %' : '-';
+        // document.getElementById('airTempValue').textContent = data.sensor ? data.sensor.suhu_dht11 + ' °C' : '-';
+        document.getElementById('airHumidityValue').textContent = data.sensor ? data.sensor.kelembaban_dht11 + ' %' : '-';
 
         // Update mode and pump status
         document.getElementById('modeValue').textContent = data.mode ? data.mode.charAt(0).toUpperCase() + data.mode.slice(1) : '-';
@@ -275,7 +277,7 @@ updateDashboard = function(data) {
     if (data && data.sensor) {
         updateGaugeChart(soilMoistureGaugeChart, data.sensor.kelembaban_tanah);
         updateGaugeChart(soilTempGaugeChart, data.sensor.suhu_ds18b20);
-        updateGaugeChart(airTempGaugeChart, data.sensor.suhu_dht11);
+        updateGaugeChart(airTempGaugeChart, data.sensor.kelembaban_dht11);
     }
 };
 </script>

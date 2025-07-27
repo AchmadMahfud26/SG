@@ -302,21 +302,24 @@ void loop() {
       humi = (int)h;
     }
 
-    // Mode otomatis → fuzzy logic
-    if (sistem == 1) {
-      float hasilFuzzy = fuzzySugenoPump(soilmoist);
-      if (hasilFuzzy >= 0.5) {
-        digitalWrite(pump, LOW);  // Pompa ON
-        pompaStatus = 1;
-        lcd.setCursor(13, 1);
-        lcd.print("ON ");
-      } else {
-        digitalWrite(pump, HIGH); // Pompa OFF
-        pompaStatus = 0;
-        lcd.setCursor(13, 1);
-        lcd.print("OFF");
-      }
-    }
+const float fuzzyOnThreshold = 0.7;  // Ambang atas (pompa menyala)
+const float fuzzyOffThreshold = 0.4; // Ambang bawah (pompa mati)
+
+// Mode otomatis → fuzzy logic dengan hysteresis
+if (sistem == 1) {
+  float hasilFuzzy = fuzzySugenoPump(soilmoist);
+  if (pompaStatus == 0 && hasilFuzzy >= fuzzyOnThreshold) {
+    digitalWrite(pump, LOW);  // Pompa ON
+    pompaStatus = 1;
+    lcd.setCursor(13, 1);
+    lcd.print("ON ");
+  } else if (pompaStatus == 1 && hasilFuzzy <= fuzzyOffThreshold) {
+    digitalWrite(pump, HIGH); // Pompa OFF
+    pompaStatus = 0;
+    lcd.setCursor(13, 1);
+    lcd.print("OFF");
+  }
+}
 
     // Update LCD sensor values
     lcd.setCursor(12, 0);
@@ -340,7 +343,7 @@ void loop() {
       String serverPath = String("http://") + server_host + "/SG/input_data.php";
       serverPath += "?suhu_ds18b20=" + String(temp);
       serverPath += "&kelembaban_tanah=" + String(soilmoist);
-      serverPath += "&suhu_dht11=" + String(temp); // Adjust if needed
+      serverPath += "&suhu_dht11=" + String(humi); // Adjusted to send correct air temperature
       serverPath += "&kelembaban_dht11=" + String(humi);
 
       WiFiClient client;
