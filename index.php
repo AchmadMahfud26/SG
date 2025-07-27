@@ -91,25 +91,37 @@ include 'includes/header.php';
     </div>
 
     <!-- Chart Histori Kelembaban Tanah -->
-    <div class="card mt-5" style="min-height: 400px;">
+    <div class="card mt-5" style="min-height: 800px;">
         <div class="card-header d-flex align-items-center justify-content-between">
+            <div>
+                <label for="pumpHistoryDate" class="fw-bold me-3">Pilih Tanggal:</label>
+                <input type="date" id="pumpHistoryDate" class="form-control d-inline-block" style="width: 180px;">
+            </div>
             <span id="chartDate" class="fw-bold text-primary"></span>
-            <span>Grafik Histori Kelembaban Tanah</span>
+            <span>Grafik Histori Kelembaban Tanah & Penyiraman</span>
         </div>
         <div class="card-body" style="height: 500px;">
             <canvas id="soilMoistureChart" height="300"></canvas>
         </div>
-    </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="assets/js/chart-history.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     let soilMoistureChart = null;
+    let pumpHistoryChart = null;
+
+
+    function updatePumpHistoryChart(chart, newPumpData, newSensorData) {
+        newPumpData = newPumpData || [];
+        newSensorData = newSensorData || [];
+    }
 
     function updateDashboard(data) {
         if (!data) return;
+
+        data.sensor_data = data.sensor_data || [];
+        data.pump_data = data.pump_data || [];
 
         // Update status koneksi di card
         const koneksi = data.koneksi || '-';
@@ -186,13 +198,18 @@ include 'includes/header.php';
         if (!soilMoistureChart) {
             soilMoistureChart = initSoilMoistureChart(data.sensor_data, data.pump_data);
         } else {
-            updateChartData(soilMoistureChart, data.sensor_data);
+            updateChartData(soilMoistureChart, data.sensor_data, data.pump_data);
         }
     }
 
-    function fetchDashboardData() {
-        axios.get('get_dashboard_data.php')
+    function fetchDashboardData(dateFilter = null) {
+        let url = 'get_dashboard_data.php';
+        if (dateFilter) {
+            url += '?date=' + encodeURIComponent(dateFilter);
+        }
+        axios.get(url)
             .then(response => {
+                console.log('Data diterima dari backend:', response.data);
                 updateDashboard(response.data);
             })
             .catch(error => {
@@ -204,15 +221,27 @@ include 'includes/header.php';
     fetchDashboardData();
 
     // Polling data tiap 1 detik
-    setInterval(fetchDashboardData, 1000);
+    setInterval(() => {
+        const datePicker = document.getElementById('pumpHistoryDate');
+        const selectedDate = datePicker ? datePicker.value : null;
+        fetchDashboardData(selectedDate);
+    }, 1000);
 
-// AJAX untuk kontrol pompa
+    // Event listener untuk date picker filter
+    document.getElementById('pumpHistoryDate').addEventListener('change', function() {
+        const selectedDate = this.value;
+        fetchDashboardData(selectedDate);
+    });
+
+    // AJAX untuk kontrol pompa
     document.getElementById('pumpControlForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
         axios.post('update_status.php', formData)
             .then(() => {
-                fetchDashboardData();
+                const datePicker = document.getElementById('pumpHistoryDate');
+                const selectedDate = datePicker ? datePicker.value : null;
+                fetchDashboardData(selectedDate);
             });
     });
 
@@ -222,64 +251,67 @@ include 'includes/header.php';
         const formData = new FormData(this);
         axios.post('set_mode.php', formData)
             .then(() => {
-                fetchDashboardData();
+                const datePicker = document.getElementById('pumpHistoryDate');
+                const selectedDate = datePicker ? datePicker.value : null;
+                fetchDashboardData(selectedDate);
             });
     });
-// Gauge Chart.js setup
-let soilMoistureGaugeChart, soilTempGaugeChart, airTempGaugeChart;
 
-function createGaugeChart(ctx, value, color, outlineColor) {
-    return new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            datasets: [{
-                data: [value, 100 - value],
-                backgroundColor: [color, '#e9ecef'],
-                borderColor: [outlineColor, '#ced4da'],
-                borderWidth: [6, 4],
-                cutout: '80%',
-                circumference: 180,
-                rotation: 270,
-            }]
-        },
-        options: {
-            responsive: false,
-            plugins: {
-                tooltip: { enabled: false },
-                legend: { display: false },
+    // Gauge Chart.js setup
+    let soilMoistureGaugeChart, soilTempGaugeChart, airTempGaugeChart;
+
+    function createGaugeChart(ctx, value, color, outlineColor) {
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [value, 100 - value],
+                    backgroundColor: [color, '#e9ecef'],
+                    borderColor: [outlineColor, '#ced4da'],
+                    borderWidth: [6, 4],
+                    cutout: '80%',
+                    circumference: 180,
+                    rotation: 270,
+                }]
+            },
+            options: {
+                responsive: false,
+                plugins: {
+                    tooltip: { enabled: false },
+                    legend: { display: false },
+                }
             }
-        }
-    });
-}
-
-function updateGaugeChart(chart, value) {
-    chart.data.datasets[0].data[0] = value;
-    chart.data.datasets[0].data[1] = 100 - value;
-    chart.update();
-}
-
-function initGauges() {
-    const soilMoistureCtx = document.getElementById('soilMoistureGauge').getContext('2d');
-    const soilTempCtx = document.getElementById('soilTempGauge').getContext('2d');
-    const airTempCtx = document.getElementById('airTempGauge').getContext('2d');
-    soilMoistureGaugeChart = createGaugeChart(soilMoistureCtx, 0, '#198754', '#145c32'); // hijau
-    soilTempGaugeChart = createGaugeChart(soilTempCtx, 0, '#0dcaf0', '#0a6a8a'); // biru muda
-    airTempGaugeChart = createGaugeChart(airTempCtx, 0, '#0d6efd', '#083b7a'); // biru tua
-}
-initGauges();
-
-// Update dashboard override
-const oldUpdateDashboard = updateDashboard;
-updateDashboard = function(data) {
-    oldUpdateDashboard(data);
-
-    // Update gauge values
-    if (data && data.sensor) {
-        updateGaugeChart(soilMoistureGaugeChart, data.sensor.kelembaban_tanah);
-        updateGaugeChart(soilTempGaugeChart, data.sensor.suhu_ds18b20);
-        updateGaugeChart(airTempGaugeChart, data.sensor.kelembaban_dht11);
+        });
     }
-};
+
+    function updateGaugeChart(chart, value) {
+        chart.data.datasets[0].data[0] = value;
+        chart.data.datasets[0].data[1] = 100 - value;
+        chart.update();
+    }
+
+    function initGauges() {
+        const soilMoistureCtx = document.getElementById('soilMoistureGauge').getContext('2d');
+        const soilTempCtx = document.getElementById('soilTempGauge').getContext('2d');
+        const airTempCtx = document.getElementById('airTempGauge').getContext('2d');
+        soilMoistureGaugeChart = createGaugeChart(soilMoistureCtx, 0, '#198754', '#145c32'); // hijau
+        soilTempGaugeChart = createGaugeChart(soilTempCtx, 0, '#0dcaf0', '#0a6a8a'); // biru muda
+        airTempGaugeChart = createGaugeChart(airTempCtx, 0, '#0d6efd', '#083b7a'); // biru tua
+    }
+    initGauges();
+
+    // Update dashboard override
+    const oldUpdateDashboard = updateDashboard;
+    updateDashboard = function(data) {
+        oldUpdateDashboard(data);
+
+        // Update gauge values
+        if (data && data.sensor) {
+            updateGaugeChart(soilMoistureGaugeChart, data.sensor.kelembaban_tanah);
+            updateGaugeChart(soilTempGaugeChart, data.sensor.suhu_ds18b20);
+            updateGaugeChart(airTempGaugeChart, data.sensor.kelembaban_dht11);
+        }
+    };
 </script>
 
 <?php include 'includes/footer.php'; ?>

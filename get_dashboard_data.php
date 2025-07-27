@@ -5,6 +5,9 @@ require_once 'config/db.php';
 header('Content-Type: application/json');
 
 try {
+    // Ambil tanggal filter dari parameter GET jika ada
+    $filter_date = isset($_GET['date']) ? $_GET['date'] : null;
+
     // Ambil data sensor terbaru
     $stmt = $pdo->query("SELECT * FROM sensor_data ORDER BY waktu DESC LIMIT 1");
     $sensor = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -45,11 +48,22 @@ try {
     $sensor_data = [];
     $pump_data = [];
     if ($status_koneksi === 'Terhubung') {
-        $stmtHist = $pdo->query("SELECT waktu, kelembaban_tanah FROM sensor_data ORDER BY waktu DESC LIMIT 30");
-        $sensor_data = array_reverse($stmtHist->fetchAll(PDO::FETCH_ASSOC));
+        if ($filter_date) {
+            // Filter data berdasarkan tanggal yang dipilih
+            $stmtHist = $pdo->prepare("SELECT waktu, kelembaban_tanah FROM sensor_data WHERE DATE(waktu) = :filter_date ORDER BY waktu ASC");
+            $stmtHist->execute(['filter_date' => $filter_date]);
+            $sensor_data = $stmtHist->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmtPump = $pdo->query("SELECT waktu, status FROM kontrol_pompa ORDER BY waktu DESC LIMIT 30");
-        $pump_data = array_reverse($stmtPump->fetchAll(PDO::FETCH_ASSOC));
+            $stmtPump = $pdo->prepare("SELECT waktu, status FROM kontrol_pompa WHERE DATE(waktu) = :filter_date ORDER BY waktu ASC");
+            $stmtPump->execute(['filter_date' => $filter_date]);
+            $pump_data = $stmtPump->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            $stmtHist = $pdo->query("SELECT waktu, kelembaban_tanah FROM sensor_data ORDER BY waktu DESC LIMIT 30");
+            $sensor_data = array_reverse($stmtHist->fetchAll(PDO::FETCH_ASSOC));
+
+            $stmtPump = $pdo->query("SELECT waktu, status FROM kontrol_pompa ORDER BY waktu DESC LIMIT 30");
+            $pump_data = array_reverse($stmtPump->fetchAll(PDO::FETCH_ASSOC));
+        }
     } else {
         $sensor = null;
         $pump_status = null;
