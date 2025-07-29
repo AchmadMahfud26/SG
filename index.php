@@ -11,7 +11,7 @@ include 'includes/header.php';
 ?>
 
 <div class="main-content">
-    <h1 class="h2 mb-4 text-success">Dashboard Smart Garden</h1>
+    <h1 class="h2 mb-4 text-success">Dashboard SIRAMIN</h1>
 
     <div class="row g-4">
         <!-- Card Sensor Kelembaban Tanah -->

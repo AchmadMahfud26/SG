@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Smart Garden Dashboard</title>
+    <title>SIRAMIN</title>
     <!-- Bootstrap 5 CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Optional Chart.js CDN -->
@@ -23,7 +23,7 @@ if (session_status() === PHP_SESSION_NONE) {
   <div class="container-fluid d-flex justify-content-between align-items-center">
     <div>
       <button class="btn btn-outline-light me-2" id="sidebarToggle" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle sidebar">☰</button>
-      <a class="navbar-brand" href="index.php">Smart Garden</a>
+      <a class="navbar-brand" href="index.php">SIRAMIN</a>
     </div>
     <div class="d-flex align-items-center dropdown">
       <a href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" class="text-white text-decoration-none d-flex align-items-center">
